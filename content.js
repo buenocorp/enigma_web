@@ -1345,7 +1345,7 @@ public class AuthFilter implements Filter {
       { id: "s5", text: "O Controller encaminha (forward) os dados para a View (JSP/HTML) via RequestDispatcher" },
       { id: "s6", text: "A View renderiza o HTML final, enviado como resposta HTTP ao navegador" }
     ],
-    lockPrompt: "Agora, a fechadura numérica da porta. Você recolheu quatro números pelo caminho — mas a ordem em que os encontrou NÃO é a combinação certa. Toque nos números para montar uma sequência e teste até encontrar a combinação correta.",
+    lockPrompt: "Agora, a fechadura numérica da porta. Você recolheu quatro números pelo caminho, anotados no seu caderno de evidências — mas a ordem em que os encontrou NÃO é a combinação certa. Consulte suas anotações, digite os números no teclado abaixo e teste até encontrar a combinação correta.",
     accusationPrompt: "Com base em TODAS as evidências recolhidas, o que realmente aconteceu com o Professor Elias Bastos?",
     accusationOptions: [
       "Ele foi sequestrado por um invasor externo que apagou os rastros",

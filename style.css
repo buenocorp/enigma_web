@@ -672,20 +672,52 @@ button {
 .order-picked .order-slot .n { color: var(--purple); font-weight: bold; }
 .order-picked-empty { color: var(--ink-dim); font-size: 0.8rem; font-style: italic; }
 
-.digit-slot { justify-content: center; gap: 0.6rem; }
-.digit-slot .digit-value {
+.lock-display {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  margin: 0.8rem 0 1rem;
+}
+.lock-slot {
+  width: 46px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-head);
-  font-size: 1.1rem;
+  font-size: 1.4rem;
+  color: var(--ink-dim);
+  background: rgba(176,140,255,0.08);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.lock-slot.filled {
   color: var(--paper);
+  border-color: var(--purple);
+  background: rgba(176,140,255,0.18);
 }
-.digit-pool { gap: 0.7rem; }
-.digit-card {
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  gap: 0.6rem;
+  justify-content: center;
+  margin-bottom: 0.9rem;
+}
+.keypad-btn {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--ink);
   font-family: var(--font-head);
-  font-size: 1.3rem;
-  min-width: 46px;
-  text-align: center;
-  padding: 0.5rem 0;
+  font-size: 1.25rem;
+  border-radius: 6px;
+  padding: 0.7rem 0;
+  cursor: pointer;
 }
+.keypad-btn:hover:not(:disabled) { border-color: var(--purple); }
+.keypad-btn:disabled { opacity: 0.4; cursor: default; }
+.keypad-backspace { font-size: 1.1rem; }
+.keypad-spacer { display: block; }
 
 .order-pool {
   display: flex;

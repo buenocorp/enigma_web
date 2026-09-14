@@ -27,10 +27,17 @@
     roomDigits: {},        // { roomId: digit } — sorteado a cada partida
     secretOrder: [],        // ordem correta (ids de sala) para a fechadura final
     foundDigitRooms: [],    // ids de sala cujo dígito já foi revelado
-    lockChips: [],
-    lockPicked: [],
-    lockPool: []
+    lockPicked: []          // dígitos digitados no teclado numérico, em ordem
   };
+
+  // Layout fixo do teclado numérico da fechadura final (estilo telefone/calculadora).
+  // `null` é um espaço vazio no grid; "back" é o botão de apagar.
+  const KEYPAD_ROWS = [
+    [7, 8, 9],
+    [4, 5, 6],
+    [1, 2, 3],
+    [null, 0, "back"]
+  ];
 
   // ---------------------------------------------------------------------
   // Bootstrapping / sorteio de conteúdo (novo a cada partida)
@@ -816,8 +823,6 @@
     renderOrderPuzzle();
 
     els["final-lock-prompt"].textContent = fr.lockPrompt;
-    state.lockChips = CASE_DATA.digitRooms.map((id) => ({ roomId: id, digit: state.roomDigits[id] }));
-    state.lockPool = shuffle(state.lockChips);
     state.lockPicked = [];
     els["lock-feedback"].textContent = "";
     renderLockPuzzle();
@@ -916,57 +921,76 @@
   }
 
   function renderLockPuzzle() {
+    const total = CASE_DATA.digitRooms.length;
+
     const pickedWrap = els["lock-picked"];
     pickedWrap.innerHTML = "";
-    if (state.lockPicked.length === 0) {
-      const p = document.createElement("div");
-      p.className = "order-picked-empty";
-      p.textContent = "Toque nos números abaixo para montar a combinação.";
-      pickedWrap.appendChild(p);
-    } else {
-      state.lockPicked.forEach((chip, i) => {
-        const slot = document.createElement("div");
-        slot.className = "order-slot digit-slot";
-        slot.innerHTML = `<span class="n">${i + 1}.</span><span class="digit-value">${chip.digit}</span>`;
-        pickedWrap.appendChild(slot);
-      });
+    for (let i = 0; i < total; i++) {
+      const hasDigit = state.lockPicked[i] !== undefined;
+      const slot = document.createElement("div");
+      slot.className = "lock-slot" + (hasDigit ? " filled" : "");
+      slot.textContent = hasDigit ? String(state.lockPicked[i]) : "•";
+      pickedWrap.appendChild(slot);
     }
 
-    const pool = els["lock-pool"];
-    pool.innerHTML = "";
-    state.lockPool.forEach((chip) => {
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "order-card digit-card";
-      card.textContent = String(chip.digit);
-      card.addEventListener("click", () => {
-        state.lockPicked.push(chip);
-        state.lockPool = state.lockPool.filter((c) => c !== chip);
-        renderLockPuzzle();
+    const pad = els["lock-pool"];
+    pad.innerHTML = "";
+    KEYPAD_ROWS.forEach((row) => {
+      row.forEach((key) => {
+        if (key === null) {
+          const spacer = document.createElement("span");
+          spacer.className = "keypad-spacer";
+          pad.appendChild(spacer);
+          return;
+        }
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+
+        if (key === "back") {
+          btn.className = "keypad-btn keypad-backspace";
+          btn.textContent = "⌫";
+          btn.disabled = state.lockPicked.length === 0;
+          btn.addEventListener("click", () => {
+            state.lockPicked.pop();
+            renderLockPuzzle();
+          });
+        } else {
+          btn.className = "keypad-btn";
+          btn.textContent = String(key);
+          btn.disabled = state.lockPicked.length >= total;
+          btn.addEventListener("click", () => {
+            if (state.lockPicked.length >= total) return;
+            state.lockPicked.push(key);
+            renderLockPuzzle();
+          });
+        }
+
+        pad.appendChild(btn);
       });
-      pool.appendChild(card);
     });
   }
 
   function resetLockPuzzle() {
-    state.lockPool = shuffle(state.lockChips);
     state.lockPicked = [];
     els["lock-feedback"].textContent = "";
     renderLockPuzzle();
   }
 
   function confirmLock() {
-    if (state.lockPicked.length !== state.lockChips.length) {
-      els["lock-feedback"].textContent = "Posicione os 4 números antes de testar a combinação.";
+    const secretDigits = state.secretOrder.map((roomId) => state.roomDigits[roomId]);
+
+    if (state.lockPicked.length !== secretDigits.length) {
+      els["lock-feedback"].textContent = `Digite os ${secretDigits.length} números antes de testar a combinação.`;
       return;
     }
 
     let hits = 0;
-    state.secretOrder.forEach((roomId, i) => {
-      if (state.lockPicked[i] && state.lockPicked[i].roomId === roomId) hits++;
+    secretDigits.forEach((digit, i) => {
+      if (state.lockPicked[i] === digit) hits++;
     });
 
-    if (hits === state.secretOrder.length) {
+    if (hits === secretDigits.length) {
       els["lock-feedback"].textContent = "✔ A fechadura gira e se abre com um clique metálico.";
       els["final-accusation-section"].classList.remove("hidden");
       els["btn-lock-confirm"].disabled = true;
@@ -974,8 +998,7 @@
       els["final-accusation-section"].scrollIntoView({ behavior: "smooth", block: "start" });
     } else {
       applyTimePenalty();
-      els["lock-feedback"].textContent = `✘ Combinação incorreta — ${hits} de ${state.secretOrder.length} números na posição certa. (+30s de penalidade)`;
-      state.lockPool = shuffle(state.lockChips);
+      els["lock-feedback"].textContent = `✘ Combinação incorreta — ${hits} de ${secretDigits.length} números na posição certa. (+30s de penalidade)`;
       state.lockPicked = [];
       renderLockPuzzle();
     }
