@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O Enigma do Professor Bastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="flashlight-overlay"></div>
+<div id="grain"></div>
+
+<header id="hud" class="hidden">
+  <div class="hud-left">
+    <span class="hud-case" id="hud-case"></span>
+    <span class="hud-room" id="hud-room-name"></span>
+  </div>
+  <div class="hud-center">
+    <div class="battery" title="Foco da lanterna">
+      <span class="battery-icon">🔦</span>
+      <div class="battery-bar"><div class="battery-fill" id="battery-fill"></div></div>
+    </div>
+  </div>
+  <div class="hud-right">
+    <span class="hud-timer" id="hud-timer" title="Tempo de investigação">⏱ 00:00</span>
+    <span class="clue-counter" id="clue-counter">Pistas: 0/0</span>
+    <span class="digit-counter" id="digit-counter" title="Números da fechadura final">🔢 0/4</span>
+    <button id="btn-notebook" class="btn-icon" type="button">📒 Caderno</button>
+  </div>
+</header>
+
+<aside id="notebook" class="hidden" aria-hidden="true">
+  <div class="notebook-inner">
+    <h2>Caderno de Evidências</h2>
+    <div id="notebook-content"></div>
+    <button id="btn-close-notebook" class="btn-secondary" type="button">Fechar</button>
+  </div>
+</aside>
+
+<main id="app">
+
+  <section id="screen-intro" class="screen active">
+    <div class="case-file">
+      <span class="stamp">CONFIDENCIAL</span>
+      <h1 id="intro-title"></h1>
+      <p class="subtitle" id="intro-subtitle"></p>
+      <dl class="ficha" id="intro-ficha"></dl>
+      <div id="intro-paragraphs"></div>
+      <p class="instrucoes" id="intro-instrucoes"></p>
+      <button id="btn-start" class="btn-primary" type="button">Iniciar Investigação</button>
+    </div>
+  </section>
+
+  <section id="screen-room" class="screen">
+    <div class="room-scene" id="room-scene"></div>
+  </section>
+
+  <section id="screen-final" class="screen">
+    <div class="room-scene room-theme-final">
+      <div class="final-wrap">
+        <div class="room-header">
+          <div class="room-icon" id="final-icon"></div>
+          <h2 id="final-name"></h2>
+          <p id="final-flavor"></p>
+        </div>
+
+        <div class="final-section" id="final-order-section">
+          <h3>Etapa 1 — Reconstrua o Fluxo</h3>
+          <p id="final-order-prompt"></p>
+          <div class="order-picked" id="order-picked"></div>
+          <div class="order-pool" id="order-pool"></div>
+          <div class="order-feedback" id="order-feedback"></div>
+          <div class="modal-actions">
+            <button id="btn-order-reset" class="btn-secondary" type="button">Recomeçar Ordem</button>
+            <button id="btn-order-confirm" class="btn-primary" type="button">Confirmar Ordem</button>
+          </div>
+        </div>
+
+        <div class="final-section hidden" id="final-lock-section">
+          <h3>Etapa 2 — A Fechadura Final</h3>
+          <p id="final-lock-prompt"></p>
+          <div class="order-picked" id="lock-picked"></div>
+          <div class="order-pool digit-pool" id="lock-pool"></div>
+          <div class="order-feedback" id="lock-feedback"></div>
+          <div class="modal-actions">
+            <button id="btn-lock-reset" class="btn-secondary" type="button">Recomeçar Combinação</button>
+            <button id="btn-lock-confirm" class="btn-primary" type="button">Testar Combinação</button>
+          </div>
+        </div>
+
+        <div class="final-section hidden" id="final-accusation-section">
+          <h3>Etapa 3 — A Acusação Final</h3>
+          <p id="final-accusation-prompt"></p>
+          <div id="accusation-options"></div>
+          <div class="hint hidden" id="accusation-hint"></div>
+          <div class="modal-actions">
+            <button id="btn-accusation-confirm" class="btn-primary" type="button">Confirmar Conclusão</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-end" class="screen">
+    <div class="case-file ending-box">
+      <span class="stamp" style="border-color:#57e08c;color:#57e08c;">CASO ENCERRADO</span>
+      <h1>Mistério Resolvido</h1>
+      <div id="ending-text"></div>
+      <p class="final-time" id="final-time"></p>
+      <button id="btn-restart" class="btn-primary" type="button">Jogar Novamente</button>
+    </div>
+  </section>
+
+</main>
+
+<div id="puzzle-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-backdrop"></div>
+  <div class="modal-box" id="modal-box">
+    <button id="btn-close-modal" class="modal-close" type="button" aria-label="Fechar">✕</button>
+    <div class="modal-flavor" id="modal-flavor"></div>
+    <h3 id="modal-title"></h3>
+    <div id="modal-code" class="code-block hidden"></div>
+    <p id="modal-prompt"></p>
+    <div id="modal-options"></div>
+    <input type="text" id="modal-fill-input" class="fill-input hidden" placeholder="Digite sua resposta...">
+    <div id="modal-feedback" class="feedback hidden"></div>
+    <div id="modal-hint" class="hint hidden"></div>
+    <div class="modal-actions">
+      <button id="btn-submit-answer" class="btn-primary" type="button">Confirmar</button>
+      <button id="btn-continue" class="btn-primary hidden" type="button">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="content.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
